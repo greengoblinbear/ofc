@@ -20,7 +20,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <ofc/colstr.h>
+#include <m_ofc_colstr.h>
 
 typedef struct
 {

@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 static bool ofc_sema__type_rule[][9] =
 {

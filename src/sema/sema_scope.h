@@ -16,7 +16,7 @@
 #ifndef __ofc_sema_scope_h__
 #define __ofc_sema_scope_h__
 
-#include <ofc/sema/intrinsic.h>
+#include <sema_intrinsic.h>
 
 typedef enum
 {

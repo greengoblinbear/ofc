@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 static const ofc_str_ref_t* ofc_sema_external__key(
 	const ofc_sema_external_t* external)

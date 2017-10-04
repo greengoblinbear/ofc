@@ -16,7 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "ofc/parse/debug.h"
+#include <parse_debug.h>
 
 typedef struct
 {

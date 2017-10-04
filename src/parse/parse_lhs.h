@@ -17,7 +17,7 @@
 #define __ofc_parse_lhs_h__
 
 #include <stdint.h>
-#include "../str_ref.h"
+#include <m_ofc_str_ref.h>
 
 
 typedef enum

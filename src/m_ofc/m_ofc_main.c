@@ -18,12 +18,12 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ofc/file.h"
-#include "ofc/parse/file.h"
-#include "ofc/prep.h"
-#include "ofc/sema.h"
-#include "ofc/global.h"
-#include "ofc/cliarg.h"
+#include <m_ofc_file.h>
+#include <parse_file.h>
+#include <m_ofc_prep.h>
+#include <m_ofc_sema.h>
+#include <m_ofc_global.h>
+#include <m_ofc_cliarg.h>
 
 ofc_global_opts_t global_opts;
 

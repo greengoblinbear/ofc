@@ -16,7 +16,7 @@
 #ifndef __ofc_parse_file_h__
 #define __ofc_parse_file_h__
 
-#include <ofc/parse.h>
+#include <m_ofc_parse.h>
 
 typedef struct
 {

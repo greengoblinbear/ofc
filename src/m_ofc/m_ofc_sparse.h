@@ -22,7 +22,7 @@
 typedef struct ofc_sparse_s ofc_sparse_t;
 
 
-#include "ofc/str_ref.h"
+#include <m_ofc_str_ref.h>
 
 typedef struct
 {
@@ -31,8 +31,8 @@ typedef struct
 } ofc_sparse_ref_t;
 
 
-#include "file.h"
-#include "label_table.h"
+#include <m_ofc_file.h>
+#include <m_ofc_label_table.h>
 
 
 ofc_sparse_t* ofc_sparse_create_file(ofc_file_t* file);

@@ -15,7 +15,7 @@
 
 #include <stdlib.h>
 
-#include "ofc/prep.h"
+#include <m_ofc_prep.h>
 
 
 ofc_sparse_t* ofc_prep(ofc_file_t* file)

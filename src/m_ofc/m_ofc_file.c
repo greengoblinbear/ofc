@@ -21,9 +21,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "ofc/fctype.h"
-#include "ofc/file.h"
-#include "ofc/global_opts.h"
+#include <m_ofc_fctype.h>
+#include <m_ofc_file.h>
+#include <m_ofc_global_opts.h>
 
 
 struct ofc_file_s

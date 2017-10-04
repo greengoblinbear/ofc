@@ -16,7 +16,7 @@
 #ifndef __ofc_parse_list_h__
 #define __ofc_parse_list_h__
 
-#include "../string.h"
+#include <m_ofc_string.h>
 
 unsigned ofc_parse_list(
 	const ofc_sparse_t* sparse, const char* ptr,

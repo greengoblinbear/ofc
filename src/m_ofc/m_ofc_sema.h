@@ -16,9 +16,9 @@
 #ifndef __ofc_sema_h__
 #define __ofc_sema_h__
 
-#include <ofc/parse.h>
-#include <ofc/hashmap.h>
-#include <ofc/global_opts.h>
+#include <m_ofc_parse.h>
+#include <m_ofc_hashmap.h>
+#include <m_ofc_global_opts.h>
 
 typedef struct ofc_sema_stmt_s       ofc_sema_stmt_t;
 typedef struct ofc_sema_scope_s      ofc_sema_scope_t;
@@ -38,32 +38,32 @@ typedef struct ofc_sema_lhs_list_s          ofc_sema_lhs_list_t;
 typedef struct ofc_sema_module_list_s       ofc_sema_module_list_t;
 typedef struct ofc_sema_format_label_list_s ofc_sema_format_label_list_t;
 
-#include <ofc/sema/kind.h>
-#include <ofc/sema/array.h>
-#include <ofc/sema/structure.h>
-#include <ofc/sema/typeval.h>
-#include <ofc/sema/parameter.h>
-#include <ofc/sema/equiv.h>
-#include <ofc/sema/common.h>
-#include <ofc/sema/format.h>
-#include <ofc/sema/label.h>
-#include <ofc/sema/external.h>
-#include <ofc/sema/dummy_arg.h>
-#include <ofc/sema/intrinsic.h>
-#include <ofc/sema/io.h>
-#include <ofc/sema/arg.h>
-#include <ofc/sema/range.h>
-#include <ofc/sema/accessibility.h>
+#include <sema_kind.h>
+#include <sema_array.h>
+#include <sema_structure.h>
+#include <sema_typeval.h>
+#include <sema_parameter.h>
+#include <sema_equiv.h>
+#include <sema_common.h>
+#include <sema_format.h>
+#include <sema_label.h>
+#include <sema_external.h>
+#include <sema_dummy_arg.h>
+#include <sema_intrinsic.h>
+#include <sema_io.h>
+#include <sema_arg.h>
+#include <sema_range.h>
+#include <sema_accessibility.h>
 
-#include <ofc/sema/stmt.h>
-#include <ofc/sema/type.h>
-#include <ofc/sema/expr.h>
-#include <ofc/sema/lhs.h>
-#include <ofc/sema/decl.h>
-#include <ofc/sema/implicit.h>
-#include <ofc/sema/scope.h>
-#include <ofc/sema/module.h>
+#include <sema_stmt.h>
+#include <sema_type.h>
+#include <sema_expr.h>
+#include <sema_lhs.h>
+#include <sema_decl.h>
+#include <sema_implicit.h>
+#include <sema_scope.h>
+#include <sema_module.h>
 
-#include <ofc/sema/pass.h>
+#include <sema_pass.h>
 
 #endif

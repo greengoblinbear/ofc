@@ -16,7 +16,7 @@
 #ifndef __ofc_sema_decl_h__
 #define __ofc_sema_decl_h__
 
-#include <ofc/hashmap.h>
+#include <m_ofc_hashmap.h>
 
 typedef struct
 {

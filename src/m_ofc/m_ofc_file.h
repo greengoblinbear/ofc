@@ -17,7 +17,7 @@
 #define __ofc_file_h__
 
 #include <stdbool.h>
-#include "lang_opts.h"
+#include <m_ofc_lang_opts.h>
 
 typedef struct
 {
@@ -33,7 +33,7 @@ typedef struct
 	ofc_file_t** file;
 } ofc_file_list_t;
 
-#include "sparse.h"
+#include <m_ofc_sparse.h>
 
 /* Path must be valid for as long as the ofc_file_t* is */
 ofc_file_t* ofc_file_create(const char* path, ofc_lang_opts_t opts);

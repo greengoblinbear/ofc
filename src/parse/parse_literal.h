@@ -17,7 +17,7 @@
 #define __ofc_parse_literal_h__
 
 #include <stdint.h>
-#include "../string.h"
+#include <m_ofc_string.h>
 
 
 typedef enum

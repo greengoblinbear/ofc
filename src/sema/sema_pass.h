@@ -16,7 +16,7 @@
 #ifndef __ofc_sema_pass_h__
 #define __ofc_sema_pass_h__
 
-#include"ofc/sema_pass_opts.h"
+#include<m_ofc_sema_pass_opts.h>
 
 bool ofc_sema_pass_struct_type(
 	ofc_sema_scope_t* scope);

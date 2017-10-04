@@ -1,0 +1,283 @@
+/* Copyright 2015 Codethink Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <m_ofc_sema.h>
+
+ofc_sema_stmt_t* ofc_sema_stmt_io_position(
+	ofc_sema_scope_t* scope,
+	const ofc_parse_stmt_t* stmt)
+{
+	if (!scope || !stmt
+		|| !stmt->io.params)
+		return NULL;
+
+	const char* name;
+	ofc_sema_stmt_t s;
+
+	switch (stmt->type)
+	{
+		case OFC_PARSE_STMT_IO_REWIND:
+			s.type = OFC_SEMA_STMT_IO_REWIND;
+			name = "REWIND";
+			break;
+		case OFC_PARSE_STMT_IO_END_FILE:
+			s.type = OFC_SEMA_STMT_IO_END_FILE;
+			name = "ENDFILE";
+			break;
+		case OFC_PARSE_STMT_IO_BACKSPACE:
+			s.type = OFC_SEMA_STMT_IO_BACKSPACE;
+			name = "BACKSPACE";
+			break;
+		default:
+			return NULL;
+	}
+
+	s.io_position.unit        = NULL;
+	s.io_position.iostat      = NULL;
+	s.io_position.err         = NULL;
+
+	ofc_parse_call_arg_t* ca_unit   = NULL;
+	ofc_parse_call_arg_t* ca_iostat = NULL;
+	ofc_parse_call_arg_t* ca_err    = NULL;
+
+	unsigned i;
+	for (i = 0; i < stmt->io.params->count; i++)
+	{
+		ofc_parse_call_arg_t* param
+			= stmt->io.params->call_arg[i];
+		if (!param) continue;
+
+		if (ofc_sparse_ref_empty(param->name))
+		{
+			if (i >= 1)
+			{
+				ofc_sparse_ref_error(param->src,
+					"Un-named parameter %u has no meaning in %s.", i, name);
+				return NULL;
+			}
+
+			if (i == 0)
+			{
+				ca_unit = param;
+			}
+		}
+		else if (ofc_str_ref_equal_strz_ci(param->name.string, "UNIT"))
+		{
+			if (ca_unit)
+			{
+				ofc_sparse_ref_error(param->src,
+					"Re-definition of UNIT in %s.", name);
+				return NULL;
+			}
+
+			ca_unit = param;
+		}
+		else if (ofc_str_ref_equal_strz_ci(param->name.string, "IOSTAT"))
+		{
+			if (ca_iostat)
+			{
+				ofc_sparse_ref_error(param->src,
+					"Re-definition of IOSTAT in %s.", name);
+				return NULL;
+			}
+
+			ca_iostat = param;
+		}
+		else if (ofc_str_ref_equal_strz_ci(param->name.string, "ERR"))
+		{
+			if (ca_err)
+			{
+				ofc_sparse_ref_error(param->src,
+					"Re-definition of ERR in %s.", name);
+				return NULL;
+			}
+
+			ca_err = param;
+		}
+		else
+		{
+			ofc_sparse_ref_error(param->src,
+				"Unrecognized paramater %u name '%.*s' in %s.",
+				i, param->name.string.size, param->name.string.base, name);
+			return NULL;
+		}
+	}
+
+	if (!ca_unit)
+	{
+		ofc_sparse_ref_error(stmt->src,
+			"No UNIT defined in %s.", name);
+		return NULL;
+	}
+
+	if (ca_unit->type == OFC_PARSE_CALL_ARG_EXPR)
+	{
+		s.io_position.unit = ofc_sema_expr(
+			scope, ca_unit->expr);
+		if (!s.io_position.unit) return NULL;
+
+		const ofc_sema_type_t* etype
+			= ofc_sema_expr_type(s.io_position.unit);
+		if (!etype) return NULL;
+
+		if (!ofc_sema_type_is_integer(etype))
+		{
+			ofc_sparse_ref_error(stmt->src,
+				"UNIT must be of type INTEGER in %s", name);
+			ofc_sema_expr_delete(s.io_position.unit);
+			return NULL;
+		}
+
+		if (!ofc_sema_expr_validate_uint(s.io_position.unit))
+		{
+			ofc_sparse_ref_error(stmt->src,
+				   "UNIT must be a positive INTEGER in %s", name);
+			ofc_sema_expr_delete(s.io_position.unit);
+			return NULL;
+		}
+	}
+	else
+	{
+		ofc_sparse_ref_error(stmt->src,
+			"UNIT must be an INTEGER expression in %s", name);
+		return NULL;
+	}
+
+	if (ca_iostat)
+	{
+		s.io_position.iostat = ofc_sema_expr(
+			scope, ca_iostat->expr);
+		if (!s.io_position.iostat)
+		{
+			ofc_sema_expr_delete(s.io_position.unit);
+			return NULL;
+		}
+
+		if (s.io_position.iostat->type != OFC_SEMA_EXPR_LHS)
+		{
+			ofc_sparse_ref_error(stmt->src,
+				"IOSTAT must be of a variable in %s", name);
+			ofc_sema_expr_delete(s.io_position.unit);
+			ofc_sema_expr_delete(s.io_position.iostat);
+			return NULL;
+		}
+
+		const ofc_sema_type_t* etype
+			= ofc_sema_expr_type(s.io_position.iostat);
+		if (!etype)
+		{
+			ofc_sema_expr_delete(s.io_position.unit);
+			ofc_sema_expr_delete(s.io_position.iostat);
+			return NULL;
+		}
+
+		if (!ofc_sema_type_is_integer(etype))
+		{
+			ofc_sparse_ref_error(stmt->src,
+				"IOSTAT must be of type INTEGER in %s", name);
+			ofc_sema_expr_delete(s.io_position.unit);
+			ofc_sema_expr_delete(s.io_position.iostat);
+			return NULL;
+		}
+
+	}
+
+	if (ca_err)
+	{
+		s.io_position.err = ofc_sema_expr_label(
+			scope, ca_err->expr);
+		if (!s.io_position.err)
+		{
+			ofc_sema_expr_delete(s.io_position.unit);
+			ofc_sema_expr_delete(s.io_position.iostat);
+			return NULL;
+		}
+	}
+
+	ofc_sema_stmt_t* as
+		= ofc_sema_stmt_alloc(s);
+	if (!as)
+	{
+		ofc_sema_expr_delete(s.io_position.unit);
+		ofc_sema_expr_delete(s.io_position.iostat);
+		ofc_sema_expr_delete(s.io_position.err);
+		return NULL;
+	}
+	return as;
+}
+
+bool ofc_sema_stmt_io_position_print(
+	ofc_colstr_t* cs,
+	const ofc_sema_stmt_t* stmt)
+{
+	if (!cs || !stmt)
+		return false;
+
+	switch (stmt->type)
+	{
+		case OFC_SEMA_STMT_IO_REWIND:
+			if (!ofc_colstr_keyword_atomic_writez(cs, "REWIND"))
+				return false;
+			break;
+		case OFC_SEMA_STMT_IO_END_FILE:
+			if (!ofc_colstr_keyword_atomic_writez(cs, "END FILE"))
+				return false;
+			break;
+		case OFC_SEMA_STMT_IO_BACKSPACE:
+			if (!ofc_colstr_keyword_atomic_writez(cs, "BACKSPACE"))
+				return false;
+			break;
+
+		default:
+			return false;
+	}
+
+	if (!ofc_colstr_atomic_writef(cs, " ")
+		|| !ofc_colstr_atomic_writef(cs, "("))
+		return false;
+
+	if (stmt->io_position.unit)
+	{
+		if (!ofc_colstr_keyword_atomic_writez(cs, "UNIT")
+			|| !ofc_colstr_atomic_writef(cs, "=")
+			|| !ofc_sema_expr_print(cs, stmt->io_position.unit))
+			return false;
+	}
+
+	if (stmt->io_position.iostat)
+	{
+		if (!ofc_colstr_atomic_writef(cs, ",")
+			|| !ofc_colstr_atomic_writef(cs, " ")
+			|| !ofc_colstr_keyword_atomic_writez(cs, "IOSTAT")
+			|| !ofc_colstr_atomic_writef(cs, "=")
+			|| !ofc_sema_expr_print(cs, stmt->io_position.iostat))
+			return false;
+	}
+
+	if (stmt->io_position.err)
+	{
+		if (!ofc_colstr_atomic_writef(cs, ",")
+			|| !ofc_colstr_atomic_writef(cs, " ")
+			|| !ofc_colstr_keyword_atomic_writez(cs, "ERR")
+			|| !ofc_colstr_atomic_writef(cs, "=")
+			|| !ofc_sema_expr_print(cs, stmt->io_position.err))
+			return false;
+	}
+
+	if (!ofc_colstr_atomic_writef(cs, ")"))
+		return false;
+
+	return true;
+}

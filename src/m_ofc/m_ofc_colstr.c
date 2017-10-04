@@ -18,7 +18,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "ofc/colstr.h"
+#include <m_ofc_colstr.h>
 
 
 struct ofc_colstr_s

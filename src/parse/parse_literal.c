@@ -17,8 +17,8 @@
 #include <math.h>
 #include <string.h>
 
-#include "ofc/parse.h"
-#include "ofc/global_opts.h"
+#include <m_ofc_parse.h>
+#include <m_ofc_global_opts.h>
 
 
 static bool is_base_digit(

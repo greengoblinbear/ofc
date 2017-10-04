@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 /* Compare type to descriptor type at
  * offset position in format_list

@@ -15,8 +15,8 @@
 
 #include <stdlib.h>
 
-#include "ofc/fctype.h"
-#include "ofc/prep.h"
+#include <m_ofc_fctype.h>
+#include <m_ofc_prep.h>
 
 
 ofc_sparse_t* ofc_prep_condense(ofc_sparse_t* unformat)

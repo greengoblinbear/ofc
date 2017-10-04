@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
-#include "ofc/global_opts.h"
+#include <m_ofc_sema.h>
+#include <m_ofc_global_opts.h>
 
 extern ofc_global_opts_t global_opts;
 

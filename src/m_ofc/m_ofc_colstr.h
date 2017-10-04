@@ -17,7 +17,7 @@
 #define __ofc_colstr_h__
 
 #include <stdbool.h>
-#include "ofc/print_opts.h"
+#include <m_ofc_print_opts.h>
 
 typedef struct ofc_colstr_s ofc_colstr_t;
 

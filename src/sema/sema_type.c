@@ -15,8 +15,8 @@
 
 #include <string.h>
 
-#include "ofc/sema.h"
-#include "ofc/target.h"
+#include <m_ofc_sema.h>
+#include <m_ofc_target.h>
 
 
 static bool ofc_sema_type__kind_valid(

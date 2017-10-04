@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/target.h"
+#include <m_ofc_target.h>
 
 static unsigned ofc_target__logical_size = 4;
 static unsigned ofc_target__integer_size = 4;

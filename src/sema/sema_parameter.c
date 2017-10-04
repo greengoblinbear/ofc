@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 
 static ofc_sema_decl_t* ofc_sema_parameter__assign(

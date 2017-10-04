@@ -17,8 +17,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ofc/fctype.h"
-#include "ofc/prep.h"
+#include <m_ofc_fctype.h>
+#include <m_ofc_prep.h>
 
 
 static unsigned ofc_prep_unformat__blank_or_comment(

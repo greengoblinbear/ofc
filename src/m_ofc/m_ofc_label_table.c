@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include "ofc/label_table.h"
+#include <m_ofc_label_table.h>
 
 typedef struct label_s label_t;
 

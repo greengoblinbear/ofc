@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 ofc_sema_module_t* ofc_sema_module_create(
 	ofc_sema_scope_t* mscope,

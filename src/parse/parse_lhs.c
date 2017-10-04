@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/parse.h"
+#include <m_ofc_parse.h>
 
 
 static void ofc_parse_lhs__cleanup(

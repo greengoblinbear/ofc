@@ -16,13 +16,13 @@
 #ifndef __ofc_parse_h__
 #define __ofc_parse_h__
 
-#include <ofc/sparse.h>
-#include <ofc/str_ref.h>
-#include <ofc/fctype.h>
+#include <m_ofc_sparse.h>
+#include <m_ofc_str_ref.h>
+#include <m_ofc_fctype.h>
 
 #include <stdio.h>
 
-#include <ofc/parse/debug.h>
+#include <parse_debug.h>
 
 typedef struct ofc_parse_lhs_s ofc_parse_lhs_t;
 typedef struct ofc_parse_expr_s ofc_parse_expr_t;
@@ -30,27 +30,27 @@ typedef struct ofc_parse_stmt_s ofc_parse_stmt_t;
 typedef struct ofc_parse_expr_implicit_do_s ofc_parse_expr_implicit_do_t;
 typedef struct ofc_parse_lhs_implicit_do_s  ofc_parse_lhs_implicit_do_t;
 
-#include <ofc/parse/list.h>
-#include <ofc/parse/keyword.h>
-#include <ofc/parse/literal.h>
-#include <ofc/parse/operator.h>
-#include <ofc/parse/array.h>
-#include <ofc/parse/lhs.h>
-#include <ofc/parse/expr.h>
-#include <ofc/parse/assign.h>
-#include <ofc/parse/call_arg.h>
-#include <ofc/parse/define_file_arg.h>
-#include <ofc/parse/implicit_do.h>
-#include <ofc/parse/star_len.h>
-#include <ofc/parse/type.h>
-#include <ofc/parse/data.h>
-#include <ofc/parse/decl.h>
-#include <ofc/parse/common.h>
-#include <ofc/parse/save.h>
-#include <ofc/parse/implicit.h>
-#include <ofc/parse/format.h>
-#include <ofc/parse/pointer.h>
-#include <ofc/parse/stmt.h>
-#include <ofc/parse/file.h>
+#include <parse_list.h>
+#include <parse_keyword.h>
+#include <parse_literal.h>
+#include <parse_operator.h>
+#include <parse_array.h>
+#include <parse_lhs.h>
+#include <parse_expr.h>
+#include <parse_assign.h>
+#include <parse_call_arg.h>
+#include <parse_define_file_arg.h>
+#include <parse_implicit_do.h>
+#include <parse_star_len.h>
+#include <parse_type.h>
+#include <parse_data.h>
+#include <parse_decl.h>
+#include <parse_common.h>
+#include <parse_save.h>
+#include <parse_implicit.h>
+#include <parse_format.h>
+#include <parse_pointer.h>
+#include <parse_stmt.h>
+#include <parse_file.h>
 
 #endif

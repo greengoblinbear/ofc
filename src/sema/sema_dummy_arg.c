@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "ofc/sema.h"
+#include <m_ofc_sema.h>
 
 void ofc_sema_dummy_arg_delete(
 	ofc_sema_dummy_arg_t* arg)

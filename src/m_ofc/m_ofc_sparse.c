@@ -17,8 +17,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "ofc/fctype.h"
-#include "ofc/file.h"
+#include <m_ofc_fctype.h>
+#include <m_ofc_file.h>
 
 
 typedef struct

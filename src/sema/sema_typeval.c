@@ -22,9 +22,9 @@
 #undef complex
 #endif
 
-#include "ofc/noopt.h"
-#include "ofc/sema.h"
-#include "ofc/target.h"
+#include <m_ofc_noopt.h>
+#include <m_ofc_sema.h>
+#include <m_ofc_target.h>
 
 
 /* TODO - Remove NO_OPT, once we find a better workaround
