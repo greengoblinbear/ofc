@@ -1,0 +1,188 @@
+#!/bin/ksh
+#==============================================================================
+# Syntax:  buildTool
+# Purpose: This tool will be used to do preliminary build and deployment of
+#          the code in OFC/ofc.  Eventually, this will be replaced by a proper
+#          'make' file.
+#==============================================================================
+
+# IMP NOTES:
+# '~tmarshal/mbig3306/OFC/ofc' is a clone of a fork of CodeThink's
+# 'https://github.com/greengoblinbear/ofc.git' repo.  Currently, the 'dev'
+# branch is to explore reorganizing the original OFC code to be more properly
+# BDE compliant.
+#
+# Initial steps will be to colocate headers with imp files, and otherwise to
+# make sure that all library code is rendered as components in coherent
+# packages.  Later steps will consider migrating the code to C++ and adding
+# enhancements as needed.
+
+# Syntax doc
+syntax="Syntax: buildTool [-d|D] [-c|-C] [-l|-L] -u <compiler> [-v]"
+syntax="${syntax}\n\tPreliminary build/deploy for the code in OFC/ofc"
+syntax="${syntax}\n\t-d  Deploy headers (default)"
+syntax="${syntax}\n\t-D  Do not re-deploy headers if present and needed"
+syntax="${syntax}\n\t-c  Compile (default)"
+syntax="${syntax}\n\t-C  Do not re-compile if objects exist"
+syntax="${syntax}\n\t-l  Link (default)"
+syntax="${syntax}\n\t-L  Do not link"
+syntax="${syntax}\n\t-n  Use native 'cc'"
+syntax="${syntax}\n\t-g  Use gcc (default)"
+syntax="${syntax}\n\t-u  Use <compiler>"
+
+
+# Hard-coded paths
+gcc="/opt/swt/install/gcc-4.9.2/bin/gcc"
+
+# Platform-specific include path
+platform=$(uname)
+if [[ $platform == "Linux" ]]; then
+    bbBldRoot="/bb/build/Linux-x86_64-32"
+elif [[ $platform == "SunOS" ]]; then
+    bbBldRoot="/bb/build/SunOS-sparc"
+else
+    print -u2 "!! Error: This script can run on Sun and Linux only."
+    exitStatus=1
+fi
+includes="${bbBldRoot}/release/robolibs/trunk/dpkgroot/opt/bb/include"
+
+# Flags and other globals
+cc="$gcc"
+deployHeaders=1
+compileFlag=1
+linkFlag=1
+verboseFlag=0
+
+# Exit status globals
+exitStatus=0
+
+#------------------------------------------------------------------------------
+# Path adjustments
+#------------------------------------------------------------------------------
+
+PATH="/bbsrc/bin/prod/bin/aotools:/opt/swt/bin:/bb/shared/bin:$PATH"
+PATH="/home/tmarshal/bin/dev:$PATH"
+export PATH
+
+#------------------------------------------------------------------------------
+# Parameter Parsing
+#------------------------------------------------------------------------------
+
+while getopts ":dDcClLngu:vh" opt; do
+    case $opt in
+     d )
+        deployHeaders=1;;
+     D )
+        deployHeaders=0;;
+     c )
+        compileFlag=1;;
+     C )
+        compileFlag=0;;
+     l )
+        linkFlag=1;;
+     L )
+        linkFlag=0;;
+     n )
+        cc="cc";;
+     g )
+        cc="$gcc";;
+     u )
+        cc=$OPTARG;;
+     v )
+        verboseFlag=$(( $verboseFlag + 1 ));;
+     h )
+        print "${syntax}"
+        exit 0;;
+     * )
+        print -u2 "${syntax}"
+        exit 1;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+#------------------------------------------------------------------------------
+# Error checking
+#------------------------------------------------------------------------------
+
+if ! whence $cc >/dev/null 2>&1 ; then
+    print -u2 "!! Can't find compiler $cc"
+    print -u2 "${syntax}"
+    exit 1
+fi
+
+#------------------------------------------------------------------------------
+# Function definitions
+#------------------------------------------------------------------------------
+
+function printIfVerbose {
+    typeset vFlag=$1
+    typeset text="$2"
+    if [[ $vFlag -gt 0 ]]; then
+        print "$text"
+    fi
+}
+
+#------------------------------------------------------------------------------
+# Main Working Code
+#------------------------------------------------------------------------------
+
+# Source and build locations
+ofcRoot="/home/tmarshal/mbig3306/OFC/ofc"
+srcPath="${ofcRoot}/src"
+buildRoot="${ofcRoot}/build"
+incPath="${buildRoot}/include"
+bldPath="${buildRoot}/build_${platform}_${cc##*/}"
+
+set -A packages "global"  "parse"  "prep"  "sema"  "m_ofc"
+
+# Adjust flags to do prerequisites of requested operations
+mkdir -p $incPath $bldPath
+if [[ $linkFlag -ne 0 ]] && ! ls ${bldPath}/*/*.o > /dev/null 2>&1; then
+    compileFlag=1
+fi
+if [[ $compileFlag -ne 0 ]] && ! ls ${incPath}/*.h > /dev/null 2>&1; then
+    deployHeaders=1
+fi
+
+
+# Perform requested/needed build steps
+if [[ deployHeaders -ne 0 ]]; then
+    # Clean include path
+    rm -rf ${incPath}/*
+    for pkg in ${packages[*]}; do
+        if $(ls ${srcPath}/${pkg}/*.h >/dev/null 2>&1); then
+            numHeaders=$(ls ${srcPath}/${pkg}/*.h | wc -l)
+            printIfVerbose $verboseFlag "There are $numHeaders headers in $pkg"
+            cp -p ${srcPath}/${pkg}/*.h $incPath
+        else
+            printIfVerbose $verboseFlag "There are NO headers in $pkg"
+        fi
+    done
+    numHeaders=$(ls $incPath | wc -l)
+    printIfVerbose $verboseFlag "$incPath has $numHeaders headers deployed."
+fi
+if [[ $compileFlag -ne 0 ]]; then
+    cwd=$PWD
+    cd $ofcRoot
+    # Set up clean build area
+    rm -rf $bldPath
+    for pkg in ${packages[*]}; do
+        mkdir -p ${bldPath}/${pkg}
+        cd ${bldPath}/${pkg}
+        printIfVerbose $verboseFlag "Compiling files in $pkg"
+        $gcc -c -I${incPath} ${srcPath}/${pkg}/*.c
+    done
+    cd $cwd
+fi
+if [[ $linkFlag -ne 0 ]]; then
+    cwd=$PWD
+    cd $bldPath
+    printIfVerbose $verboseFlag "Linking objects in $bldPath"
+    $cc -lm -o ./ofc.${platform}_${cc##*/}.tsk  */*.o
+    cd $cwd
+fi
+
+
+exit $exitStatus
+
+#----------------------------END-OF-FILE---------------------------------------

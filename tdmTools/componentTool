@@ -1,0 +1,267 @@
+#!/bin/ksh
+#==============================================================================
+# Syntax:  componentTool
+# Purpose: This starter tool will be used to analyze and perhaps reorganize
+#          the code in OFC/ofc
+#==============================================================================
+
+# IMP NOTES:
+# '~tmarshal/mbig3306/OFC/ofc' is a clone of a fork of CodeThink's
+# 'https://github.com/greengoblinbear/ofc.git' repo.  Currently, the 'dev'
+# branch is to explore reorganizing the original OFC code to be more properly
+# BDE compliant.
+#
+# Initial steps will be to colocate headers with imp files, and otherwise to
+# make sure that all library code is rendered as components in coherent
+# packages.  Later steps will consider migrating the code to C++ and adding
+# enhancements as needed.
+
+# Syntax doc
+syntax="Syntax: componentTool"
+syntax="${syntax}\n\tanalyze and reorganize the code in OFC/ofc"
+syntax="${syntax}\n\t-m i Look for imp (.c) files matching found headers"
+syntax="${syntax}\n\t-m h Look for header files matching found imp (.c) files"
+syntax="${syntax}\n\t-m r Rename files consistent with package"
+syntax="${syntax}\n\t-m f Find (grep) #include directives."
+syntax="${syntax}\n\t-m R Rename #include'd files (ad hoc)"
+syntax="${syntax}\n\t"
+
+# Hard-coded paths
+includes="/bb/build/Linux-x86_64-32/release/robolibs/trunk/dpkgroot/opt/bb/include"
+ofcPath="/home/tmarshal/mbig3306/OFC/ofc"
+
+# Flags and other globals
+eofTag="/* --------------------------------- END-OF-FILE ---------------------------- */"
+mode="LookForImp"
+
+# Exit status globals
+exitStatus=0
+
+#------------------------------------------------------------------------------
+# Path adjustments
+#------------------------------------------------------------------------------
+
+PATH="/bbsrc/bin/prod/bin/aotools:/opt/swt/bin:/bb/shared/bin:$PATH"
+PATH="/home/tmarshal/bin/dev:$PATH"
+export PATH
+
+#------------------------------------------------------------------------------
+# Parameter Parsing
+#------------------------------------------------------------------------------
+
+while getopts ":m:h" opt; do
+    case $opt in
+     m )
+        type=$OPTARG
+        if [[ $type == "h" ]]; then
+            mode="LookForHeader"
+        elif [[ $type == "i" ]]; then
+            mode="LookForImp"
+        elif [[ $type == "R" ]]; then
+            mode="RenameIncludes"
+        elif [[ $type == "r" ]]; then
+            mode="Rename"
+        elif [[ $type == "f" ]]; then
+            mode="IncludeMap"
+        elif [[ $type == "a" ]]; then
+            mode="AddEOFBanner"
+        fi;;
+     h )
+        print "${syntax}"
+        exit 0;;
+     * )
+        print -u2 "${syntax}"
+        exit 1;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+#------------------------------------------------------------------------------
+# Error checking
+#------------------------------------------------------------------------------
+
+platform=$(uname)
+#if [[ $platform != "Linux" ]]; then
+#    print -u2 "!! Error: This script can run on Linux only."
+#    exitStatus=1
+#fi
+
+#if [ $# -eq 0 ]; then
+#    print -u2 "${syntax}"
+#    exit 1
+#fi
+
+#------------------------------------------------------------------------------
+# Main Working Code
+#------------------------------------------------------------------------------
+
+unique="${0##*/}_$$_${HOME##*/}_$(date '+%H:%M:%S')"
+tmpDir="${TMPDIR}/tmpDir_for_${unique}"
+tmpFile="${tmpDir}/tmpFile"
+
+mkdir $tmpDir
+trap "rm -rf $tmpDir " EXIT
+
+# Source and build locations
+ofcRoot="/home/tmarshal/mbig3306/OFC/ofc"
+srcPath="${ofcRoot}/src"
+buildRoot="${ofcRoot}/build"
+incPath="${buildRoot}/include"
+bldPath="${buildRoot}/build_${platform}_${cc##*/}"
+
+set -A packages "global"  "m_ofc"  "parse"  "prep"  "sema"
+
+if [[ $mode == "RenameIncludes" ]]; then
+    cwd=$PWD
+    target="src"
+    for pkg in sema_stmt sema_pass; do
+        print STDERR "+++ Processing $pkg"
+        cd ${ofcRoot}/${target}/${pkg}
+        print STDERR "+++DEBUG: In $PWD"
+        filePaths=""
+        # Check to see if there are any headers and any .c's
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.c >/dev/null 2>&1); then
+            filePaths="$filePaths *.c"
+        else
+            print STDERR "?? There are no .c files in $pkg"
+        fi
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.h >/dev/null 2>&1); then
+            filePaths="$filePaths *.h"
+        else
+            print STDERR "?? There are no headers in $pkg"
+        fi
+        if [[ -z $filePaths ]]; then
+            print STDERR "?? There are no .h or .c files in $pkg -- skipping"
+            continue
+        fi
+        # Step through each .c and .h in $pkg
+        for file in $filePaths; do
+            perl -pe 's|[<\"]ofc/(\w+)/(\w+.h)[>\"]|<$1_$2>|; 
+                      s|[<\"]ofc/(\w+.h)[>\"]|<m_ofc_$1>|; 
+                      s|[<\"]\.\./(\w+.h)[>\"]|<m_ofc_$1>|; 
+                     ' < $file > ${file}.modified
+        done
+        print ""
+    done
+    cd $cwd
+elif [[ $mode == "Rename" ]]; then
+    cwd=$PWD
+    target="src"
+    #for pkg in ${packages[*]}; do
+    for pkg in sema_stmt sema_pass; do
+        print "+++ Processing $pkg"
+        cd ${ofcRoot}/${target}/${pkg}
+        print "+++DEBUG: In $PWD"
+        filePaths=""
+        # Check to see if there are any headers and any .c's
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.c >/dev/null 2>&1); then
+            filePaths="$filePaths *.c"
+        else
+            print "?? There are no .c files in $pkg"
+        fi
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.h >/dev/null 2>&1); then
+            filePaths="$filePaths *.h"
+        else
+            print "?? There are no headers in $pkg"
+        fi
+        if [[ -z $filePaths ]]; then
+            print "?? There are no .h or .c files in $pkg -- skipping"
+            continue
+        fi
+        # Step through each .c and .h in $pkg
+        for file in $filePaths; do
+            if [[ ${file} == ${file#${pkg}} ]]; then
+                print "git mv $file ${pkg}${file}"
+                git mv        $file ${pkg}${file}
+                #git mv $file        ../parse_${pkg}${file}
+            else
+                print "File $file already has correct name and package prefix"
+            fi
+        done
+        print ""
+    done
+    cd $cwd
+elif [[ $mode == "IncludeMap" ]]; then
+    # Imp note: No human-friendly output; filter to generate 'idep' input
+    cwd=$PWD
+    target="src"
+    for pkg in ${packages[*]}; do
+        print -u2 "+++ Processing $pkg"
+        cd ${ofcRoot}/${target}/${pkg}
+        print -u2  "+++DEBUG: In $PWD"
+        filePaths=""
+        # Check to see if there are any headers and any .c's
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.c >/dev/null 2>&1); then
+            filePaths="$filePaths *.c"
+        else
+            print -u2 "?? There are no .c files in $pkg"
+        fi
+        if $(ls ${ofcRoot}/${target}/${pkg}/*.h >/dev/null 2>&1); then
+            filePaths="$filePaths *.h"
+        else
+            print -u2 "?? There are no headers in $pkg"
+        fi
+        if [[ -z $filePaths ]]; then
+            print -u2 "?? There are no .h or .c files in $pkg -- skipping"
+            continue
+        fi
+        # Find #include's for file
+        for file in $filePaths; do
+            print "$file"
+            egrep ' *#include' $file |
+              perl -pe 's|^ *\#include *||;
+                        s|[<>\"]||g;
+                        s| +.*$||;
+                       '
+            print ""
+        done
+    done
+
+
+
+elif [[ $mode == "LookForImp" || $mode == "LookForHeader" ]]; then
+    for pkg in "/" "/parse/" "/sema/"; do
+        if [[ $mode == "LookForImp" ]]; then
+            for file in ${ofcRoot}/include/ofc${pkg}*.h; do
+                imp="${file##*/}"
+                imp="${imp%\.*}.c"
+                imp="${ofcRoot}/src${pkg}${imp}"
+                print "file = $file"
+                print "imp  = $imp"
+                if [[ ! -r $imp ]]; then
+                    print "*** Can't read $imp"
+                fi
+            done
+        else
+            for file in ${ofcRoot}/src${pkg}*.c; do
+                hdr="${file##*/}"
+                hdr="${hdr%\.*}.h"
+                hdr="${ofcRoot}/include/ofc${pkg}${hdr}"
+                print "file = $file"
+                print "hdr  = $hdr"
+                if [[ ! -r $hdr ]]; then
+                    print "*** Can't read $hdr"
+                fi
+            done
+        fi
+    done
+elif [[ $mode == "AddEOFBanner" ]]; then
+    for pkg in ${packages[*]}; do
+        cd ${srcPath}/${pkg}
+        for file in *.[ch]; do
+            print "$file"
+            cat $file > ${file}.tmp
+            print "" >> ${file}.tmp
+            print '/* --------------------------------- END-OF-FILE ---------------------------- */' >> ${file}.tmp
+            #print $eofTag
+        done
+    done
+else
+    print "!! Error: mode $mode not recognized"
+    exitStatus=1
+fi
+    
+
+exit $exitStatus
+
+#----------------------------END-OF-FILE---------------------------------------
